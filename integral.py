@@ -92,7 +92,7 @@ class Integral:
 
         for ax in arr:
             move_sympy_plot_to_axes(p, ax)
-        
+
         Riemann = self.riemann_calculations()
 
         arr[0].scatter(Riemann.x_left, Riemann.y_left, s=10)
@@ -146,8 +146,8 @@ if __name__ == "__main__":
     example.definite_integral_fill_plot()
     example.riemann_plot()
 
-    for method in ('left', 'midpoint', 'right'):
-        print(f'{method}: {example.riemann_sum(method=method)}')
+    for i, method in enumerate(example.riemann_sum()._fields):
+        print(f'{method}: {example.riemann_sum()[i]}')
 
     print(example.exact_integral_value())
     print(example.exact_integral_value(num_eval=True))
