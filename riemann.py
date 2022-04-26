@@ -6,11 +6,41 @@ import numpy as np
 
 class Integral:
 
-    def __init__(self, sympy_expression, domain, interval, variable):
-        self.sympy_expression = sympy_expression
-        self.domain = domain
-        self.interval = interval
-        self.x = variable
+    def __init__(self, sympy_expression, domain, interval, variable, bars=10):
+        self._sympy_expression = sympy_expression
+        self._domain = domain
+        self._interval = interval
+        self._x = variable
+        self.bars = bars
+
+    @property
+    def sympy_expression(self):
+        return self._sympy_expression
+
+    @property
+    def domain(self):
+        return self._domain
+
+    @property
+    def interval(self):
+        return self._interval
+
+    @property
+    def x(self):
+        return self._x
+
+    @property
+    def bars(self):
+        return self._bars
+
+    @bars.setter
+    def bars(self, value):
+        if not isinstance(value, int):
+            raise ValueError('Must be a positive integer')
+        elif value < 0:
+            raise ValueError('Must be a positive integer')
+        else:
+            self._bars = value
 
     def definite_integral_fill_plot(self, nb_points=100, figsize=(8, 6)):
         # TODO update the docs
@@ -30,7 +60,7 @@ class Integral:
         # ax.legend(loc='best')
         plt.show()
 
-    def riemann_plot(self, bars=10):
+    def riemann_plot(self):
         # TODO update the docs
         fig, arr = plt.subplots(nrows=1, ncols=3, figsize=(15, 5),
                                 constrained_layout=True, facecolor=(1, 1, 1))
@@ -40,7 +70,7 @@ class Integral:
         for ax in arr:
             move_sympy_plot_to_axes(p, ax)
 
-        x_values = np.linspace(*self.interval, bars+1)
+        x_values = np.linspace(*self.interval, self.bars+1)
         f = lambdify(self.x, self.sympy_expression, 'numpy')
 
         x_left = x_values[:-1]
@@ -52,30 +82,30 @@ class Integral:
 
         arr[0].scatter(x_left, y_left, s=10)
         arr[0].bar(x_left, y_left,
-                   width=(self.interval[1]-self.interval[0])/bars,
+                   width=(self.interval[1]-self.interval[0])/self.bars,
                    align='edge', alpha=0.2, edgecolor='orange')
         arr[1].scatter(x_mid, y_mid, s=10)
         arr[1].bar(x_mid, y_mid,
-                   width=(self.interval[1]-self.interval[0])/bars,
+                   width=(self.interval[1]-self.interval[0])/self.bars,
                    align='center', alpha=0.2, edgecolor='orange')
         arr[2].scatter(x_right, y_right, s=10)
         arr[2].bar(x_right, y_right,
-                   width=-(self.interval[1]-self.interval[0])/bars,
+                   width=-(self.interval[1]-self.interval[0])/self.bars,
                    align='edge', alpha=0.2, edgecolor='orange')
 
         plt.show()
 
-    def riemann_sum(self, bars=10, method='midpoint'):
+    def riemann_sum(self, method='midpoint'):
         # TODO update the docs
 
-        x_values = np.linspace(*self.interval, bars+1)
+        x_values = np.linspace(*self.interval, self.bars+1)
         f = lambdify(self.x, self.sympy_expression, 'numpy')
 
         x_left = x_values[:-1]
         x_right = x_values[1:]
         x_mid = (x_left + x_right)/2
 
-        width = (self.interval[1] - self.interval[0])/bars
+        width = (self.interval[1] - self.interval[0])/self.bars
 
         if method == 'left':
             return np.sum(f(x_left)*width)
