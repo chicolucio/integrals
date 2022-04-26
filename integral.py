@@ -54,7 +54,11 @@ class Integral:
         p = plot(self.sympy_expression, (self.x, *self.domain), show=False)
         move_sympy_plot_to_axes(p, ax)
 
-        x_fill = np.linspace(*self.interval, nb_points)
+        try:
+            x_fill = np.linspace(*self.interval, nb_points)
+        except TypeError:
+            x_fill = np.linspace(float(self.interval[0]), float(
+                self.interval[1]), nb_points)
         f = lambdify(self.x, self.sympy_expression, 'numpy')
         ax.fill_between(x_fill, f(x_fill))
 
@@ -63,7 +67,11 @@ class Integral:
 
     @property
     def riemann_x_y(self):
-        x_values = np.linspace(*self.interval, self.bars+1)
+        try:
+            x_values = np.linspace(*self.interval, self.bars+1)
+        except TypeError:
+            x_values = np.linspace(float(self.interval[0]), float(
+                self.interval[1]), self.bars+1)
         f = lambdify(self.x, self.sympy_expression, 'numpy')
         return x_values, f
 
@@ -77,7 +85,7 @@ class Integral:
         y_right = f(x_values)[1:]
         x_mid = (x_left + x_right)/2
         y_mid = f(x_mid)
-        bar_width = (self.interval[1] - self.interval[0])/self.bars
+        bar_width = (x_values[-1] - x_values[0])/self.bars
 
         Riemann = namedtuple('Riemann',
                              ['x_left', 'y_left', 'x_right', 'y_right',
