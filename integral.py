@@ -130,6 +130,12 @@ class Integral:
             return N(symbolic_answer, digits)
         return symbolic_answer
 
+    def riemann_errors(self):
+        RiemannErrors = namedtuple('RiemannErrors', ('left', 'right', 'mid'))
+        exact = float(self.exact_integral_value(num_eval=True))
+        calc = (value - exact for value in self.riemann_sum())
+        return RiemannErrors(*calc)
+
 
 if __name__ == "__main__":
 

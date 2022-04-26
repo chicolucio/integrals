@@ -20,3 +20,8 @@ class TestArctan5:
     def test_riemann_sums(self):
         assert np.allclose((self.example.riemann_sum()),
                            (1.6134886, 1.1327194, 1.3735434))
+
+    def test_riemann_errors(self):
+        assert np.allclose((self.example.riemann_errors()),
+                           (0.2400870, -0.2406821, 0.0001417),
+                           atol=1E-6, rtol=0)
