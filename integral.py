@@ -61,13 +61,15 @@ class Integral:
         # ax.legend(loc='best')
         plt.show()
 
+    @property
     def riemann_x_y(self):
         x_values = np.linspace(*self.interval, self.bars+1)
         f = lambdify(self.x, self.sympy_expression, 'numpy')
         return x_values, f
 
+    @property
     def riemann_calculations(self):
-        x_values, f = self.riemann_x_y()
+        x_values, f = self.riemann_x_y
 
         x_left = x_values[:-1]
         y_left = f(x_values)[:-1]
@@ -93,7 +95,7 @@ class Integral:
         for ax in arr:
             move_sympy_plot_to_axes(p, ax)
 
-        Riemann = self.riemann_calculations()
+        Riemann = self.riemann_calculations
 
         arr[0].scatter(Riemann.x_left, Riemann.y_left, s=10)
         arr[0].bar(Riemann.x_left, Riemann.y_left,
@@ -110,10 +112,11 @@ class Integral:
 
         plt.show()
 
+    @property
     def riemann_sum(self):
         # TODO update the docs
-        _, f = self.riemann_x_y()
-        Riemann = self.riemann_calculations()
+        _, f = self.riemann_x_y
+        Riemann = self.riemann_calculations
 
         RiemannSum = namedtuple('RiemannSum', ('left', 'right', 'mid'))
 
@@ -130,10 +133,11 @@ class Integral:
             return N(symbolic_answer, digits)
         return symbolic_answer
 
+    @property
     def riemann_errors(self):
         RiemannErrors = namedtuple('RiemannErrors', ('left', 'right', 'mid'))
         exact = float(self.exact_integral_value(num_eval=True))
-        calc = (value - exact for value in self.riemann_sum())
+        calc = (value - exact for value in self.riemann_sum)
         return RiemannErrors(*calc)
 
 
@@ -146,8 +150,8 @@ if __name__ == "__main__":
     example.definite_integral_fill_plot()
     example.riemann_plot()
 
-    for i, method in enumerate(example.riemann_sum()._fields):
-        print(f'{method}: {example.riemann_sum()[i]}')
+    for i, method in enumerate(example.riemann_sum._fields):
+        print(f'{method}: {example.riemann_sum[i]}')
 
     print(example.exact_integral_value())
     print(example.exact_integral_value(num_eval=True))
