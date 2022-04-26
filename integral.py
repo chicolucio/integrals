@@ -110,19 +110,18 @@ class Integral:
 
         plt.show()
 
-    def riemann_sum(self, method='midpoint'):
+    def riemann_sum(self):
         # TODO update the docs
         _, f = self.riemann_x_y()
         Riemann = self.riemann_calculations()
 
-        if method == 'left':
-            return np.sum(f(Riemann.x_left)*Riemann.bar_width)
-        elif method == 'right':
-            return np.sum(f(Riemann.x_right)*Riemann.bar_width)
-        elif method == 'midpoint':
-            return np.sum(f(Riemann.x_mid)*Riemann.bar_width)
-        else:
-            raise ValueError("Method must be 'left', 'right' or 'midpoint'.")
+        RiemannSum = namedtuple('RiemannSum', ('left', 'right', 'mid'))
+
+        left = np.sum(f(Riemann.x_left)*Riemann.bar_width)
+        right = np.sum(f(Riemann.x_right)*Riemann.bar_width)
+        mid = np.sum(f(Riemann.x_mid)*Riemann.bar_width)
+
+        return RiemannSum(left, right, mid)
 
     def exact_integral_value(self, num_eval=False, digits=5):
         symbolic_answer = integrate(

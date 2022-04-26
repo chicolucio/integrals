@@ -17,8 +17,6 @@ class TestArctan5:
         result = self.example.exact_integral_value(num_eval=True)
         assert np.isclose(float(result), 1.3734)
 
-    @pytest.mark.parametrize('method, result', (('left', 1.6134886),
-                                                ('midpoint', 1.3735434),
-                                                ('right', 1.1327194)))
-    def test_riemann_sums(self, method, result):
-        assert np.isclose(self.example.riemann_sum(method), result)
+    def test_riemann_sums(self):
+        assert np.allclose((self.example.riemann_sum()),
+                           (1.6134886, 1.1327194, 1.3735434))
