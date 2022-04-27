@@ -15,5 +15,6 @@ for i in range(-2, 3):
     p = plot(expr, (x, -3, 3), ylim=(-2.5, 4), label=text_label, show=False)
     move_sympy_plot_to_axes(p, ax)
 
-ax.legend(loc='best')
+ax.legend(loc='best', fontsize=13)
+ax.set_title('Antiderivatives of $2x$\n', fontsize=16)
 plt.show()
