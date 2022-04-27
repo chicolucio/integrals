@@ -7,8 +7,28 @@ from collections import namedtuple
 
 
 class Integral:
+    """A class used to represent an Integral. It has methods to calculate
+    the exact integral value and approximate values through Riemann sums.
+    It has methods to plot graphs: an exact area; and an approximate area
+    with Riemann sums.
+    """
 
     def __init__(self, sympy_expression, domain, interval, variable, bars=10):
+        """
+        Parameters
+        ----------
+        sympy_expression : SymPy expression
+            SymPy expression representing the function
+        domain : tuple
+            Function domain
+        interval : tuple
+            Integral lower and upper limits. It can be the same as the domain
+        variable : SymPy symbol
+            Variable SymPy symbol used in the sympy_expression
+        bars : int, optional
+            The number of Riemann rectangles to be considered, by default 10
+        """
+
         self._sympy_expression = sympy_expression
         self._domain = domain
         self._interval = interval
@@ -46,16 +66,36 @@ class Integral:
 
     @property
     def _latex_strings(self):
+        """Returns LaTeX strings to be used on graphs
+
+        Returns
+        -------
+        tuple
+            Tuple of strings:
+            (expression, integral lower limit, integral upper limit)
+        """
+
         Latex = namedtuple('Latex', ('expr', 'lower_lim', 'upper_lim'))
         return Latex(f'${latex(self.sympy_expression)}$',
                      f'${latex(self.interval[0])}$',
                      f'${latex(self.interval[1])}$')
 
     def definite_integral_fill_plot(self, nb_points=100, figsize=(8, 6)):
-        # TODO update the docs
+        """Plots the function graph with a shaded area representing the
+        exact integral
 
-        # TODO change behavior so that the function can receive an axes instead
-        # of a figsize
+        Parameters
+        ----------
+        nb_points : int, optional
+            Number of points to be used to create the area, by default 100
+        figsize : tuple, optional
+            Figure size, by default (8, 6)
+
+        Returns
+        -------
+        Matplotlib axis
+            Axis with the Matplotlib objects.
+        """
 
         fig, ax = plt.subplots(figsize=figsize)
         Latex = self._latex_strings
@@ -80,6 +120,15 @@ class Integral:
 
     @property
     def riemann_x_y(self):
+        """Generates the coordinates to be used in Riemann calculations
+        and plots.
+
+        Returns
+        -------
+        tuple
+            Coordinates.
+        """
+
         try:
             x_values = np.linspace(*self.interval, self.bars+1)
         except TypeError:
@@ -90,6 +139,16 @@ class Integral:
 
     @property
     def riemann_calculations(self):
+        """Riemann calculations for each method: left, midpoint, right. The
+        methods consider endpoints (left and right) or the midpoint of each
+        subinterval.
+
+        Returns
+        -------
+        tuple
+            NamedTuple with x and y values for each method.
+        """
+
         x_values, f = self.riemann_x_y
 
         x_left = x_values[:-1]
@@ -112,7 +171,14 @@ class Integral:
         return fig, arr
 
     def riemann_plot(self):
-        # TODO update the docs
+        """Plots each Riemann method.
+
+        Returns
+        -------
+        Tuple
+            Matplotlib axes, one for each method.
+        """
+
         try:
             self.fig
         except AttributeError:
@@ -197,7 +263,7 @@ class Integral:
         self.fig.tight_layout(rect=[0, 0.07, 1, 1.0])
         return self.arr
 
-    def animate(self, bars):
+    def _animate(self, bars):
         for ax in self.arr:
             ax.autoscale_view()
             ax.clear()
@@ -207,8 +273,30 @@ class Integral:
 
     def animation(self, frames=(1, 5, 10, 20, 50, 100, 200), interval=150,
                   save=False, filename='animation.gif', fps=1):
+        """Animates the Riemann plots
+
+        Parameters
+        ----------
+        frames : tuple, optional
+            values for the number of rectangles, by default
+            (1, 5, 10, 20, 50, 100, 200)
+        interval : int, optional
+            Time in ms between each frame, by default 150
+        save : bool, optional
+            If the animation is going to be saved, by default False
+        filename : str, optional
+            GIF filename, by default 'animation.gif'
+        fps : int, optional
+            GIF frames per second, by default 1
+
+        Returns
+        -------
+        Matplotlib animation
+            Matplotlib animation
+        """
+
         self.fig, self.arr = self._riemann_plot_setup()
-        ani = animation.FuncAnimation(self.fig, self.animate,
+        ani = animation.FuncAnimation(self.fig, self._animate,
                                       frames=frames,
                                       interval=interval,
                                       repeat_delay=150,
@@ -219,7 +307,14 @@ class Integral:
 
     @property
     def riemann_sum(self):
-        # TODO update the docs
+        """Calculates the Riemann sum for each method
+
+        Returns
+        -------
+        tuple
+            NamedTuple with the values for each method
+        """
+
         _, f = self.riemann_x_y
         Riemann = self.riemann_calculations
 
@@ -232,6 +327,21 @@ class Integral:
         return RiemannSum(left, right, mid)
 
     def exact_integral_value(self, num_eval=False, digits=5):
+        """Calculates the exact integral value. Symbolic or numeric.
+
+        Parameters
+        ----------
+        num_eval : bool, optional
+            If it will return a numeric evaluation, by default False
+        digits : int, optional
+            The number of digits of the numeric evaluation, by default 5
+
+        Returns
+        -------
+        float or SymPy expression
+            A standard Python float if num_eval. Else, a SymPy expression.
+        """
+
         symbolic_answer = integrate(
             self.sympy_expression, (self.x, *self.interval))
         if num_eval:
@@ -240,6 +350,14 @@ class Integral:
 
     @property
     def riemann_errors(self):
+        """Calculates the Riemann sum errors for each method.
+
+        Returns
+        -------
+        tuple
+            NamedTuple with the values for each method.
+        """
+
         RiemannErrors = namedtuple('RiemannErrors', ('left', 'right', 'mid'))
         exact = float(self.exact_integral_value(num_eval=True))
         calc = (value - exact for value in self.riemann_sum)
