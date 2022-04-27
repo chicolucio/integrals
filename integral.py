@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import matplotlib.animation as animation
 from sympy import Symbol, plot, lambdify, integrate, N, latex
 from helpers import move_sympy_plot_to_axes
 import numpy as np
@@ -74,10 +75,8 @@ class Integral:
         main_title = f'Plot for {Latex.expr}\n'
         area_title = f'Area from {Latex.lower_lim} to {Latex.upper_lim}'
         title = main_title + area_title
-
-        # ax.legend(loc='best', fontsize=14)
         plt.title(title, fontsize=16)
-        plt.show()
+        return ax
 
     @property
     def riemann_x_y(self):
@@ -107,88 +106,116 @@ class Integral:
         return Riemann(x_left, y_left, x_right, y_right,
                        x_mid, y_mid, bar_width)
 
+    def _riemann_plot_setup(self):
+        fig, arr = plt.subplots(nrows=1, ncols=3, figsize=(15, 5),
+                                facecolor=(1, 1, 1), tight_layout=True)
+        return fig, arr
+
     def riemann_plot(self):
         # TODO update the docs
+        try:
+            self.fig
+        except AttributeError:
+            self.fig, self.arr = self._riemann_plot_setup()
         Latex = self._latex_strings
-        fig, arr = plt.subplots(nrows=1, ncols=3, figsize=(15, 5),
-                                facecolor=(1, 1, 1))
 
         p = plot(self.sympy_expression, (self.x, *self.domain), show=False)
 
-        for ax in arr:
+        for ax in self.arr:
             move_sympy_plot_to_axes(p, ax)
 
         Riemann = self.riemann_calculations
+        exact = self.exact_integral_value(num_eval=True)
 
-        arr[0].scatter(Riemann.x_left, Riemann.y_left, s=10)
-        arr[0].bar(Riemann.x_left, Riemann.y_left,
-                   width=Riemann.bar_width,
-                   align='edge', alpha=0.2, edgecolor='orange')
-        arr[0].set_title(f'Left Riemann Sum - N = {self.bars}')
-        arr[0].annotate(f'Exact value: {self.exact_integral_value()}',
-                        xy=(0.5, 0.), xytext=(0, 30),
-                        xycoords=('axes fraction', 'figure fraction'),
-                        textcoords='offset points',
-                        ha='center', va='bottom', size=12)
-        arr[0].annotate(f'Approximate value: {self.riemann_sum.left}',
-                        xy=(0.5, 0.), xytext=(0, 15),
-                        xycoords=('axes fraction', 'subfigure fraction'),
-                        textcoords='offset points',
-                        ha='center', va='bottom', size=12)
-        arr[0].annotate(f'Error: {self.riemann_errors.left}',
-                        xy=(0.5, 0.), xytext=(0, 0),
-                        xycoords=('axes fraction', 'figure fraction'),
-                        textcoords='offset points',
-                        ha='center', va='bottom', size=12)
+        self.arr[0].scatter(Riemann.x_left, Riemann.y_left, s=10)
+        self.arr[0].bar(Riemann.x_left, Riemann.y_left,
+                        width=Riemann.bar_width,
+                        align='edge', alpha=0.2, edgecolor='orange')
+        self.arr[0].set_title(f'Left Riemann Sum - N = {self.bars}')
+        self.arr[0].annotate(f'Exact value: {exact}',
+                             xy=(0.5, 0.), xytext=(0, 30),
+                             xycoords=('axes fraction', 'figure fraction'),
+                             textcoords='offset points',
+                             ha='center', va='bottom', size=12)
+        self.arr[0].annotate(f'Approximate value: {self.riemann_sum.left:.5f}',
+                             xy=(0.5, 0.), xytext=(0, 15),
+                             xycoords=('axes fraction', 'subfigure fraction'),
+                             textcoords='offset points',
+                             ha='center', va='bottom', size=12)
+        self.arr[0].annotate(f'Error: {self.riemann_errors.left:.5E}',
+                             xy=(0.5, 0.), xytext=(0, 0),
+                             xycoords=('axes fraction', 'figure fraction'),
+                             textcoords='offset points',
+                             ha='center', va='bottom', size=12)
 
-        arr[1].scatter(Riemann.x_mid, Riemann.y_mid, s=10)
-        arr[1].bar(Riemann.x_mid, Riemann.y_mid,
-                   width=Riemann.bar_width,
-                   align='center', alpha=0.2, edgecolor='orange')
-        arr[1].set_title(f'Midpoint Riemann Sum - N = {self.bars}')
-        arr[1].annotate(f'Exact value: {self.exact_integral_value()}',
-                        xy=(0.5, 0.), xytext=(0, 30),
-                        xycoords=('axes fraction', 'figure fraction'),
-                        textcoords='offset points',
-                        ha='center', va='bottom', size=12)
-        arr[1].annotate(f'Approximate value: {self.riemann_sum.mid}',
-                        xy=(0.5, 0.), xytext=(0, 15),
-                        xycoords=('axes fraction', 'subfigure fraction'),
-                        textcoords='offset points',
-                        ha='center', va='bottom', size=12)
-        arr[1].annotate(f'Error: {self.riemann_errors.mid}',
-                        xy=(0.5, 0.), xytext=(0, 0),
-                        xycoords=('axes fraction', 'figure fraction'),
-                        textcoords='offset points',
-                        ha='center', va='bottom', size=12)
+        self.arr[1].scatter(Riemann.x_mid, Riemann.y_mid, s=10)
+        self.arr[1].bar(Riemann.x_mid, Riemann.y_mid,
+                        width=Riemann.bar_width,
+                        align='center', alpha=0.2, edgecolor='orange')
+        self.arr[1].set_title(f'Midpoint Riemann Sum - N = {self.bars}')
+        self.arr[1].annotate(f'Exact value: {exact}',
+                             xy=(0.5, 0.), xytext=(0, 30),
+                             xycoords=('axes fraction', 'figure fraction'),
+                             textcoords='offset points',
+                             ha='center', va='bottom', size=12)
+        self.arr[1].annotate(f'Approximate value: {self.riemann_sum.mid:.5f}',
+                             xy=(0.5, 0.), xytext=(0, 15),
+                             xycoords=('axes fraction', 'subfigure fraction'),
+                             textcoords='offset points',
+                             ha='center', va='bottom', size=12)
+        self.arr[1].annotate(f'Error: {self.riemann_errors.mid:.5E}',
+                             xy=(0.5, 0.), xytext=(0, 0),
+                             xycoords=('axes fraction', 'figure fraction'),
+                             textcoords='offset points',
+                             ha='center', va='bottom', size=12)
 
-        arr[2].scatter(Riemann.x_right, Riemann.y_right, s=10)
-        arr[2].bar(Riemann.x_right, Riemann.y_right,
-                   width=-Riemann.bar_width,
-                   align='edge', alpha=0.2, edgecolor='orange')
-        arr[2].set_title(f'Right Riemann Sum - N = {self.bars}')
-        arr[2].annotate(f'Exact value: {self.exact_integral_value()}',
-                        xy=(0.5, 0.), xytext=(0, 30),
-                        xycoords=('axes fraction', 'figure fraction'),
-                        textcoords='offset points',
-                        ha='center', va='bottom', size=12)
-        arr[2].annotate(f'Approximate value: {self.riemann_sum.right}',
-                        xy=(0.5, 0.), xytext=(0, 15),
-                        xycoords=('axes fraction', 'subfigure fraction'),
-                        textcoords='offset points',
-                        ha='center', va='bottom', size=12)
-        arr[2].annotate(f'Error: {self.riemann_errors.right}',
-                        xy=(0.5, 0.), xytext=(0, 0),
-                        xycoords=('axes fraction', 'figure fraction'),
-                        textcoords='offset points',
-                        ha='center', va='bottom', size=12)
+        self.arr[2].scatter(Riemann.x_right, Riemann.y_right, s=10)
+        self.arr[2].bar(Riemann.x_right, Riemann.y_right,
+                        width=-Riemann.bar_width,
+                        align='edge', alpha=0.2, edgecolor='orange')
+        self.arr[2].set_title(f'Right Riemann Sum - N = {self.bars}')
+        self.arr[2].annotate(f'Exact value: {exact}',
+                             xy=(0.5, 0.), xytext=(0, 30),
+                             xycoords=('axes fraction', 'figure fraction'),
+                             textcoords='offset points',
+                             ha='center', va='bottom', size=12)
+        self.arr[2].annotate(f'Approximate value: {self.riemann_sum.right:.5f}',  # NoQA
+                             xy=(0.5, 0.), xytext=(0, 15),
+                             xycoords=('axes fraction', 'subfigure fraction'),
+                             textcoords='offset points',
+                             ha='center', va='bottom', size=12)
+        self.arr[2].annotate(f'Error: {self.riemann_errors.right:.5E}',
+                             xy=(0.5, 0.), xytext=(0, 0),
+                             xycoords=('axes fraction', 'figure fraction'),
+                             textcoords='offset points',
+                             ha='center', va='bottom', size=12)
 
         main_title = f'Plot for {Latex.expr}\n'
         area_title = f'Area from {Latex.lower_lim} to {Latex.upper_lim}'
         title = main_title + area_title
-        fig.suptitle(title, fontsize=18)
-        fig.tight_layout(rect=[0, 0.07, 1, 1.0])
-        plt.show()
+        self.fig.suptitle(title, fontsize=18)
+        self.fig.tight_layout(rect=[0, 0.07, 1, 1.0])
+        return self.arr
+
+    def animate(self, bars):
+        for ax in self.arr:
+            ax.autoscale_view()
+            ax.clear()
+        self.fig.canvas.draw()
+        self.bars = bars
+        return self.riemann_plot()
+
+    def animation(self, frames=(1, 5, 10, 20, 50, 100, 200), interval=150,
+                  save=False, filename='animation.gif', fps=1):
+        self.fig, self.arr = self._riemann_plot_setup()
+        ani = animation.FuncAnimation(self.fig, self.animate,
+                                      frames=frames,
+                                      interval=interval,
+                                      repeat_delay=150,
+                                      )
+        if save:
+            ani.save(filename, 'imagemagick', fps=fps)
+        return ani
 
     @property
     def riemann_sum(self):
