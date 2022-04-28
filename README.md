@@ -6,14 +6,15 @@
 
 ![header image](images/animation.gif)
 
-A Python script to compute integrals:
+A Python project to compute integrals:
 
 - symbolically with SymPy
 - numerically through Riemann sums
 
-Yes, you can make such calculations with SciPy. The project aims to be
-educational, showing how numerical integration works through animations like the
-one at the beginning. There are more animations in the [images folder](images/).
+The project aims to be educational, showing how numerical integration works
+through animations like the one at the beginning. There are more animations in
+the [images folder](images/). Yes, you can do such calculations with SciPy
+but without the nice animations :-)
 
 ## Usage
 
