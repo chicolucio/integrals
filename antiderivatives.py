@@ -18,3 +18,5 @@ for i in range(-2, 3):
 ax.legend(loc='best', fontsize=13)
 ax.set_title('Antiderivatives of $2x$\n', fontsize=16)
 plt.show()
+fig.savefig('images/antiderivatives.png', 
+            dpi=fig.dpi, bbox_inches='tight', pad_inches=0.1)
